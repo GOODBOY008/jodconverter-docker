@@ -9,7 +9,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -21,6 +20,12 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Set lowercase repository name
+      id: repo
+      run: |
+        echo "name=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+        echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -37,7 +42,7 @@ jobs:
       id: meta-runtime
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runtime
+        images: ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}-runtime
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -49,7 +54,7 @@ jobs:
       id: meta-examples
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-examples
+        images: ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}-examples
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -57,6 +62,7 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=raw,value=latest,enable={{is_default_branch}}
 
+    # Build runtime images first
     - name: Build and push runtime JRE image
       uses: docker/build-push-action@v5
       with:
@@ -85,6 +91,7 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
+    # Build examples images (depend on runtime)
     - name: Build and push examples GUI image
       uses: docker/build-push-action@v5
       with:
@@ -95,7 +102,7 @@ jobs:
         tags: ${{ steps.meta-examples.outputs.tags }}-gui
         labels: ${{ steps.meta-examples.outputs.labels }}
         build-args: |
-          BASE_REGISTRY=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          BASE_REGISTRY=${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}-runtime
           BASE_VERSION=latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
@@ -110,7 +117,7 @@ jobs:
         tags: ${{ steps.meta-examples.outputs.tags }}-rest
         labels: ${{ steps.meta-examples.outputs.labels }}
         build-args: |
-          BASE_REGISTRY=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          BASE_REGISTRY=${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}-runtime
           BASE_VERSION=latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
@@ -123,6 +130,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Set lowercase repository name
+      id: repo
+      run: |
+        echo "name=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
