@@ -77,6 +77,7 @@ jobs:
           JAVA_VERSION=21
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        outputs: type=docker
 
     - name: Build and push runtime JDK image
       uses: docker/build-push-action@v5
@@ -103,8 +104,8 @@ jobs:
         tags: ${{ steps.meta-examples.outputs.tags }}-gui
         labels: ${{ steps.meta-examples.outputs.labels }}
         build-args: |
-          BASE_REGISTRY=${{ env.REGISTRY }}/${{ steps.repo.outputs.owner }}
-          BASE_VERSION=${{ steps.repo.outputs.repo_name }}-runtime:latest
+          BASE_REGISTRY=${{ env.REGISTRY }}/${{ steps.repo.outputs.owner }}/${{ steps.repo.outputs.repo_name }}-runtime
+          BASE_VERSION=latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -118,8 +119,8 @@ jobs:
         tags: ${{ steps.meta-examples.outputs.tags }}-rest
         labels: ${{ steps.meta-examples.outputs.labels }}
         build-args: |
-          BASE_REGISTRY=${{ env.REGISTRY }}/${{ steps.repo.outputs.owner }}
-          BASE_VERSION=${{ steps.repo.outputs.repo_name }}-runtime:latest
+          BASE_REGISTRY=${{ env.REGISTRY }}/${{ steps.repo.outputs.owner }}/${{ steps.repo.outputs.repo_name }}-runtime
+          BASE_VERSION=latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 

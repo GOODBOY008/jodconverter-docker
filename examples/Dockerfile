@@ -1,8 +1,8 @@
-ARG BASE_REGISTRY=local
-ARG BASE_VERSION=jodconverter-runtime:latest
+ARG BASE_REGISTRY=local/jodconverter-runtime
+ARG BASE_VERSION=latest
 
 #  ----------------------------------  Base image
-FROM ${BASE_REGISTRY}/${BASE_VERSION} as jodconverter-app-base
+FROM ${BASE_REGISTRY}:${BASE_VERSION} as jodconverter-app-base
 ENV JAR_FILE_NAME=app.war
 ENV JAR_FILE_BASEDIR=/opt/app
 ENV LOG_BASE_DIR=/var/log
