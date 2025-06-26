@@ -102,8 +102,8 @@ jobs:
         tags: ${{ steps.meta-examples.outputs.tags }}-gui
         labels: ${{ steps.meta-examples.outputs.labels }}
         build-args: |
-          BASE_REGISTRY=${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}-runtime
-          BASE_VERSION=latest
+          BASE_REGISTRY=${{ env.REGISTRY }}
+          BASE_VERSION=${{ steps.repo.outputs.name }}-runtime:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -117,8 +117,8 @@ jobs:
         tags: ${{ steps.meta-examples.outputs.tags }}-rest
         labels: ${{ steps.meta-examples.outputs.labels }}
         build-args: |
-          BASE_REGISTRY=${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}-runtime
-          BASE_VERSION=latest
+          BASE_REGISTRY=${{ env.REGISTRY }}
+          BASE_VERSION=${{ steps.repo.outputs.name }}-runtime:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
