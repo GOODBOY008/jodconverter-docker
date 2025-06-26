@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # JODConverter GUI Web界面版本
+  jodconverter-gui:
+    build:
+      context: .
+      dockerfile: examples/Dockerfile
+      target: gui
+      args:
+        BASE_REGISTRY: local
+        BASE_VERSION: latest
+    ports:
+      - "8080:8080"
+    environment:
+      - JAVA_OPTS=-Xmx512m
+    volumes:
+      - ./config/application.properties:/etc/app/application.properties:ro
+    restart: unless-stopped
+    depends_on:
+      - jodconverter-runtime
+
+  # JODConverter REST API版本
+  jodconverter-rest:
+    build:
+      context: .
+      dockerfile: examples/Dockerfile
+      target: rest
+      args:
+        BASE_REGISTRY: local
+        BASE_VERSION: latest
+    ports:
+      - "8081:8080"
+    environment:
+      - JAVA_OPTS=-Xmx512m
+    volumes:
+      - ./config/application.properties:/etc/app/application.properties:ro
+    restart: unless-stopped
+    depends_on:
+      - jodconverter-runtime
+    profiles:
+      - rest
+
+  # Runtime基础镜像 (仅用于构建依赖)
+  jodconverter-runtime:
+    build:
+      context: .
+      dockerfile: runtime/Dockerfile
+      target: jre
+      args:
+        JAVA_VERSION: 21
+    image: local/jodconverter-runtime:latest
+    # 这个服务不会运行，只是确保runtime镜像被构建
+    command: "true"
+    profiles:
+      - build-only
+
+volumes:
+  # 用于持久化临时文件
+  temp_files:
+    driver: local
+
+networks:
+  default:
+    name: jodconverter-network
