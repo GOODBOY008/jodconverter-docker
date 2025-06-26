@@ -9,7 +9,7 @@ ENV LOG_BASE_DIR=/var/log
 ENV NONPRIVUSER=jodconverter
 ENV NONPRIVGROUP=jodconverter
 
-COPY ./bin/docker-entrypoint.sh /docker-entrypoint.sh
+COPY ./examples/bin/docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN mkdir -p ${JAR_FILE_BASEDIR} /etc/app \
   && touch /etc/app/application.properties /var/log/app.log /var/log/app.err \

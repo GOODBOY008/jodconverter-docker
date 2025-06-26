@@ -179,14 +179,14 @@ if [ "$BUILD_EXAMPLES" = true ]; then
     build_and_push \
         "${REGISTRY}/jodconverter-examples:gui-${RUNTIME_VERSION}" \
         "examples/Dockerfile" \
-        "--build-arg BASE_REGISTRY=${REGISTRY} --build-arg BASE_VERSION=jre-${RUNTIME_VERSION}" \
+        "--build-arg BASE_REGISTRY=${REGISTRY}/jodconverter-runtime --build-arg BASE_VERSION=${RUNTIME_VERSION}" \
         "gui"
     
     # Build REST example
     build_and_push \
         "${REGISTRY}/jodconverter-examples:rest-${RUNTIME_VERSION}" \
         "examples/Dockerfile" \
-        "--build-arg BASE_REGISTRY=${REGISTRY} --build-arg BASE_VERSION=jre-${RUNTIME_VERSION}" \
+        "--build-arg BASE_REGISTRY=${REGISTRY}/jodconverter-runtime --build-arg BASE_VERSION=${RUNTIME_VERSION}" \
         "rest"
     
     # Tag without version suffix for compatibility
