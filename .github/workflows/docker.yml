@@ -45,25 +45,14 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build runtime JRE image for version detection
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./runtime/Dockerfile
-        target: jre
-        load: true
-        tags: runtime-temp:jre
-        build-args: |
-          JAVA_VERSION=21
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Detect LibreOffice version
+    - name: Set LibreOffice version
       id: lo-version
       run: |
-        LO_VERSION=$(docker run --rm runtime-temp:jre libreoffice --version | grep -oP '\d+\.\d+' | head -1)
-        echo "version=${LO_VERSION}" >> $GITHUB_OUTPUT
-        echo "Detected LibreOffice version: ${LO_VERSION}"
+        LO_VERSION=$(grep -oP '(?<=LIBREOFFICE_VERSION=)\S+' runtime/Dockerfile)
+        LO_VERSION_SHORT=$(echo "$LO_VERSION" | grep -oP '^\d+\.\d+')
+        echo "version=${LO_VERSION_SHORT}" >> $GITHUB_OUTPUT
+        echo "full_version=${LO_VERSION}" >> $GITHUB_OUTPUT
+        echo "LibreOffice version: ${LO_VERSION} (short: ${LO_VERSION_SHORT})"
 
     - name: Extract metadata for runtime
       id: meta-runtime
@@ -93,6 +82,7 @@ jobs:
         labels: ${{ steps.meta-runtime.outputs.labels }}
         build-args: |
           JAVA_VERSION=21
+          LIBREOFFICE_VERSION=${{ steps.lo-version.outputs.full_version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -107,6 +97,7 @@ jobs:
         labels: ${{ steps.meta-runtime.outputs.labels }}
         build-args: |
           JAVA_VERSION=21
+          LIBREOFFICE_VERSION=${{ steps.lo-version.outputs.full_version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 

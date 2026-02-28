@@ -1,5 +1,6 @@
 ARG TARGET_BASE_IMAGE=debian:bookworm
 ARG JAVA_VERSION=21
+ARG LIBREOFFICE_VERSION=25.8.5
 
 ############ JRESOURCE ############
 FROM eclipse-temurin:${JAVA_VERSION}-jdk-noble as jresource
@@ -20,6 +21,7 @@ ARG TARGET_BASE_IMAGE
 FROM $TARGET_BASE_IMAGE as jre
 
 ARG JAVA_VERSION
+ARG LIBREOFFICE_VERSION
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
@@ -34,15 +36,28 @@ ENV LC_ALL=C.UTF-8
 
 COPY --from=jresource /jre $JAVA_HOME
 
-# using backports for libreoffice 24.x (bookworm has 7.x)
-RUN echo 'deb http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/backports.list \
+# Determine architecture for LibreOffice download URL
+# Install runtime dependencies, then download and install LibreOffice from official .deb packages
+RUN set -eux \
+  && ARCH=$(dpkg --print-architecture) \
+  && if [ "$ARCH" = "amd64" ]; then \
+       LO_ARCH="x86-64"; LO_DL_ARCH="x86_64"; \
+     elif [ "$ARCH" = "arm64" ]; then \
+       LO_ARCH="aarch64"; LO_DL_ARCH="aarch64"; \
+     else \
+       echo "Unsupported architecture: $ARCH" && exit 1; \
+     fi \
   && apt-get update && apt-get -y install \
   apt-transport-https locales-all libpng16-16 libxinerama1 libgl1-mesa-glx libfontconfig1 libfreetype6 libxrender1 \
-  libxcb-shm0 libxcb-render0 adduser cpio findutils gosu \
+  libxcb-shm0 libxcb-render0 adduser cpio findutils gosu wget \
   # procps needed for us finding the libreoffice process, see https://github.com/sbraconnier/jodconverter/issues/127#issuecomment-463668183
   procps \
-  # using backports for libreoffice 24.x (bookworm has 7.x)
-  && apt-get -y install -t bookworm-backports libreoffice libreoffice-base libreoffice-common libreoffice-base-core \
+  # Download and install LibreOffice from official packages
+  && LO_TARBALL="LibreOffice_${LIBREOFFICE_VERSION}_Linux_${LO_ARCH}_deb.tar.gz" \
+  && wget -q "https://download.documentfoundation.org/libreoffice/stable/${LIBREOFFICE_VERSION}/deb/${LO_DL_ARCH}/${LO_TARBALL}" -O /tmp/libreoffice.tar.gz \
+  && tar -xzf /tmp/libreoffice.tar.gz -C /tmp \
+  && dpkg -i /tmp/LibreOffice_${LIBREOFFICE_VERSION}*/DEBS/*.deb \
+  && rm -rf /tmp/LibreOffice_* /tmp/libreoffice.tar.gz \
   && groupadd $NONPRIVGROUP \
   && useradd -m $NONPRIVUSER -g $NONPRIVGROUP \
   && rm -rf /var/lib/apt/lists/*
