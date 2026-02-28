@@ -48,7 +48,7 @@ RUN set -eux \
        echo "Unsupported architecture: $ARCH" && exit 1; \
      fi \
   && apt-get update && apt-get -y install \
-  apt-transport-https locales-all libpng16-16 libxinerama1 libgl1-mesa-glx libfontconfig1 libfreetype6 libxrender1 \
+  apt-transport-https locales-all fontconfig libpng16-16 libxinerama1 libgl1-mesa-glx libfontconfig1 libfreetype6 libxrender1 \
   libxcb-shm0 libxcb-render0 adduser cpio findutils gosu wget \
   # procps needed for us finding the libreoffice process, see https://github.com/sbraconnier/jodconverter/issues/127#issuecomment-463668183
   procps \
